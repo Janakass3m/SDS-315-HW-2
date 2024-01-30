@@ -1,0 +1,241 @@
+---
+title: "HW 2"
+author: "Jana Kassem"
+date: "2024-01-27"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+EID: jmk4958
+Github Link: <>.
+
+# 1
+
+```{r echo=FALSE}
+options(warn = -1)
+#load packages
+library(ggplot2)
+library(dplyr)
+
+#Import Excel sheet as a dataset
+profs <- read.csv("C:/Users/janak/OneDrive/SDS 315/profs.csv")
+```
+
+### Part A
+
+```{r echo=FALSE, warning=FALSE}
+ggplot(profs, aes(x = eval)) +
+  geom_histogram(binwidth = 0.5, fill = "lightblue", color = "black", alpha = 0.7) +
+  labs(title = "Evaluation Scores of UT Courses", x = "Score", y = "Frequency") + theme_classic()
+```
+
+This plot demonstrated the rating of UT professors from 1 to 5. It is skewed left with a median of `r median(profs$eval, na.rm=TRUE)`, an upper quartile of `r quantile(profs$eval, 0.75, na.rm=TRUE)`, and a lower quartile of `r quantile(profs$eval, 0.25, na.rm=TRUE)`. This demonstrates that most UT professors on an average are rated highly. No professor has an evaluation below a 2 which contributes to the high median.
+
+### Part B
+
+```{r echo=FALSE, warning=FALSE}
+ggplot(profs, aes(x = native, y = eval)) +
+  geom_boxplot() + labs(title = "UT Course Evaluation Scores by Professor's Native Language", x = "English Native Speaker",
+       y = "Evaluation Score") + theme_classic()
+
+non_english <- profs %>% filter(native == 'no')
+english <- profs %>% filter(native == 'yes')
+```
+
+This distribution shows the difference in course evaluations for courses that have native English speakers and ones that don't. The median evaluation score for native English speaking professors is a `r median(english$eval)` compared to `r median(non_english$eval)` for non-native English professors. The upper quartile for native-English speaking professors is `r quantile(english$eval, 0.75, na.rm=TRUE)` compared to `r quantile(non_english$eval, 0.75, na.rm=TRUE)` for non-native English professors. Courses with non-native english speaking professors have a lower quartile of `r quantile(non_english$eval, 0.25, na.rm=TRUE)` compared to `r quantile(english$eval, 0.25, na.rm=TRUE)`  for native english speaking professors. This demonstrates that courses with native english speaking professors on average have a higher rating for their courses.
+
+
+### Part C
+
+```{r echo=FALSE, warning=FALSE}
+ggplot(profs, aes(x = eval)) + geom_histogram(binwidth = .25, fill = "purple", color = "black", alpha = .3) +
+  labs(title = "UT Course Evaluation Scores by Gender", x = "Evaluation Score", y = "Frequency") +
+  facet_wrap(~gender, nrow=2) +
+  theme_classic()
+
+female <- profs %>% filter(gender == 'female')
+male <- profs %>% filter(gender == 'male')
+
+```
+
+This distribution shows the difference in course evaluations by the professor's gender. Both distributions are slightly skewed to the left. The median evaluation score for female professors is a `r median(female$eval)` compared to `r median(male$eval)` for male professors. The upper quartile for female professors is `r quantile(female$eval, 0.75, na.rm=TRUE)` compared to `r quantile(male$eval, 0.75, na.rm=TRUE)` for male professors. Courses with male professors have a lower quartile of `r quantile(male$eval, 0.25, na.rm=TRUE)` compared to `r quantile(female$eval, 0.25, na.rm=TRUE)`  for female professors. This demonstrates that male professors receive higher scores on average than female professors.
+
+### Part D
+
+```{r echo=FALSE, warning=FALSE}
+ggplot(profs, aes(x = beauty, y = eval)) + geom_point(color = "maroon", alpha = 0.8) +
+  labs(title = "Correlation Between Beauty Reating and Evaluation Score", x = "Beauty Rating", y = "Course Evaluation Score") +
+  theme_classic()
+```
+
+This distribution represents the correlation between a professor's beauty rating and their course evaluation score. The correlation coefficient of the distribution is a `r cor(profs$eval, profs$beauty)`. This means that there is very low correlation between these two variables.
+
+
+# 2
+
+```{r echo=FALSE, warning=FALSE}
+bike <- read.csv("C:/Users/janak/OneDrive/SDS 315/bikeshare.csv")
+```
+
+
+### Part A
+
+```{r echo=FALSE, warning=FALSE}
+byhour = bike %>% 
+  group_by(hr) %>% 
+  summarize(count = n(), mean_bike_rentals = mean(total, na.rm=TRUE))
+
+ggplot(byhour, aes(x = hr , y = mean_bike_rentals)) +
+  geom_line(color = "red", alpha = 2, size = 1.15) +
+  labs(title = "Average Hourly Bike Rentals",
+       x = "Hour of day (0 = midnight)",
+       y = "Average Bike Rentals")
+```
+This distribution represents the average hourly bike rentals over a 24-hour period. The distribution increases throughout the day, dips around 9am to 11am, and then gradually decreases after 5pm. There are two peaks and The hour with the highest average bike rental is around 5pm with over 450 bikes rented. The hour with the lowest amount of bike rentals is around 4am with nearly 0 bikes rented. There is another peak at 8am with slightly over 350 bikes rented. This might reveal that most bike rentals occur when people commute to and from work. 
+### Part B
+
+```{r echo=FALSE, message=FALSE}
+
+byday = bike %>% 
+  group_by(hr, workingday) %>% 
+  summarize(count = n(), mean_bike_rentals = mean(total, na.rm=TRUE))
+
+ggplot(byday, aes(x = hr, y = mean_bike_rentals, color = factor(workingday))) +
+  geom_line(size = 1) +
+  labs(title = "Average Hourly Bike Rentals by Working Day",
+       x = "Hour of day (0 = midnight)",
+       y = "Average Bike Rentals",
+       color = "Facet") +
+  facet_wrap(~workingday, labeller = labeller(workingday = c("0" = "Weekend/Holiday", "1" = "Workday")))
+
+```
+This distribution represents a comparison of average bike rentals throughout a day according to if it's a working day or not. There is only one peak for non-working days at around 12pm with about 360 bikes rented. Workdays have two peaks of bike rentals at 5pm with over 500 bikes rented, and 8am with around 475 bikes rented. On the weekends there is around 85 bikes rented between 12am and 2am. This is different than the weekday as there is less than 50 bikes rented in that time period. This distribution shows that there is not as much bikes rented on the weekend versus a weekday. It could also conclude that the average bike rental on the weekend is a gradual change versus the weekday where there are distinguishable peaks during commuter hours.
+
+### Part C
+
+```{r echo=FALSE, message=FALSE}
+Nine = bike %>% 
+  filter(hr == '9') %>%
+  group_by(weathersit, workingday) %>% 
+  summarize(count = n(), mean_bike_rentals = mean(total, na.rm=TRUE))
+
+
+
+ggplot(Nine, aes(x = weathersit, y = mean_bike_rentals, fill = factor(workingday))) +
+  geom_bar(stat = "identity") + labs(title = "Average Ridership at 9 AM by Weather Situation",
+       x = "Weather Situation",
+       y = "Average Ridership",
+       fill = "Facet") +
+  theme_classic() +
+  facet_wrap(~workingday, labeller = labeller(workingday = c("0" = "Weekend/Holiday", "1" = "Workday")))
+
+```
+This distribution represents ridership at 9am by weather situation and faceted by working day. For the weather situation 1 means "Clear, Few clouds, Partly cloudy, Partly cloudy", 2 means "Mist + Cloudy, Mist + Broken clouds, Mist + Few clouds, Mist", 3 means "Light Snow, Light Rain + Thunderstorm + Scattered clouds, Light Rain + Scattered clouds", and 4 means "Heavy Rain + Ice Pallets + Thunderstorm + Mist, Snow + Fog". On both working days and non-working days there is less ridership at 9am when the weather is at level 3. This would be due to dangerous conditions and wet roads making it unsafe to bike. Both of working days and non-working days have the highest ridership when the weather is at level 1 due to minimal risk from the weather. There is about a 25 bike decrease from level 1 to 2 on weekends because people would rather not bike while it's misting, but these two weather situations on working days have almost no difference. This is because people need a method to get to work at 9am. Overall, less people bike on the weekend at 9am because they don't have commitments where they need to travel (ex. work).
+
+# 3
+
+```{r echo=FALSE, warning=FALSE}
+capmetro <- read.csv("C:/Users/janak/OneDrive/SDS 315/capmetro_UT.csv")
+```
+
+### Part A
+
+```{r echo=FALSE, message=FALSE}
+# Recode the categorical variables in sensible, rather than alphabetical, order
+capmetro = mutate(capmetro,
+day_of_week = factor(day_of_week,
+levels=c("Mon", "Tue", "Wed","Thu", "Fri", "Sat", "Sun")),
+month = factor(month,
+levels=c("Sep", "Oct","Nov")))
+
+
+metrobyhour = capmetro %>% 
+  group_by(hour_of_day, day_of_week, month) %>% 
+  summarize(count = n(), avg_boardings = mean(boarding, na.rm=TRUE))
+
+
+
+ggplot(metrobyhour, aes(x = hour_of_day, y = avg_boardings, color = month)) +
+  geom_line() + 
+  labs(title = "Average Boardings by Hour of the Day, Day of Week, and Month", x = "Hour of the Day (0 = Midnight)", y = "Average Boardings") + facet_wrap(~day_of_week, ncol = 3)
+
+
+```
+This graph displays average passengers boarding the Capital Metro UT Bus. It is faceted by the day of the week and includes three lines to distinguish between the months of September, October, or November. The hour of peak boarding is around 5pm for weekdays while the weekend has no peak boarding time. For the weekdays, there is a gradual incline from midnight until 5pm and then a steep drop until 11pm. Average boarding in September might look lower on Monday because Labor day holiday fell on a Monday in 2018. This means less people were boarding buses and travelling. Boarding in November on Wednesdays, Thursdays, and Fridays look lower due to most people getting days off from work because of Thanksgiving. 
+
+### Part B
+
+```{r echo=FALSE, warning=FALSE}
+ggplot(capmetro, aes(x = temperature, y = boarding, color = weekend)) +
+  geom_point() +
+  facet_wrap(~hour_of_day, ncol = 4) +
+  labs(title = "Boardings by Temperature and Weekday and Hour",
+       x = "Temperature (Farenheit)", y = "Boardings") + theme(aspect.ratio = .5)
+
+```
+This graph represents the number of boarding passengers according to temperature and separated by hour of the day and type of working day. On average there are more people boarding on weekdays versus weekends. People board the bus more at 3-5pm. Temperature does not seem to have a noticeable affect on number of passengers boarding because the scatter plot is clustered horizontally across temperature when keeping hour of day and weekend status constant. 
+
+# 4
+
+```{r echo=FALSE, warning=FALSE}
+billboard <- read.csv("C:/Users/janak/OneDrive/SDS 315/billboard.csv")
+```
+
+### Part A
+
+```{r echo=FALSE, message=FALSE}
+popular <- billboard %>%
+  group_by(performer, song) %>%
+  summarize( count = max(weeks_on_chart)) %>%
+  arrange(desc(count)) %>%
+  head(10)
+  
+knitr::kable(popular, caption = "Top 10 Most Popular Songs")
+
+```
+
+This table represents the top 10 most popular songs since 1958 by measuring the total number of weeks that a song spent on the Billboard Top 100 (count).
+
+
+### Part B
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+diversity <- billboard %>%
+  filter(year != 1958 & year != 2021) %>%
+  group_by(year) %>%
+  summarize(uni = unique(song)) %>%
+  summarize(uniquesongs = length(uni))
+
+ggplot(diversity, aes(x = year, y = uniquesongs)) +
+  geom_line() +
+  labs(title = "Musical Diversity by Year", x = "Year", y = "Unique Songs")+ theme_classic()
+
+```
+This figure represents the number of unique songs that appeared on the Billboard Top 100 by year. There was a peak in diversity of music at around 1965 with 800 unique songs. The diversity of music slowly declined from that year hitting an all time low in 2000 with only 400 unique songs. After the 2000's music started to diversify again, and peaked at 800 unique songs in 2020. This resurgence of music might have been due to the pandemic and lock down giving people time to explore new music.
+
+### Part C
+
+```{r echo=FALSE, message=FALSE}
+tenhits <- billboard %>%
+  group_by(performer, song) %>%
+  summarize(weeks_on_chart = n_distinct(week)) %>%
+  filter(weeks_on_chart >= 10) %>%
+  group_by(performer) %>%
+  summarize(uniqueartist = sum(n_distinct(song)))
+
+thirtyhits <- tenhits %>%
+  filter(uniqueartist >= 30)
+
+ggplot(thirtyhits, aes(x = performer, y = uniqueartist)) +
+  geom_bar(stat = "identity", fill = "purple") +
+  labs(title = "Number of Ten Week Hits by Artists", x = "Performer", y = "Number of Ten Week Hits")+ theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+  coord_flip()
+
+
+```
+This distribution represents the number of ten-week-hits of artists that have at least 30 songs that were ten-week-hits. The artist with the highest number of songs being Elton John with 50+ ten week hits.
